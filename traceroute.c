@@ -5,10 +5,10 @@
 #include <errno.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include "send.h"
 #include "receive.h"
 #include "print.h"
-#include <unistd.h>
 
 int main(int argc, char *argv[]){
 	if (argc != 2){

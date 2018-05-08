@@ -5,6 +5,7 @@
 #include <time.h>
 #include <sys/select.h>
 #include <netinet/ip.h>
+
 int receive_one(int sockfd,int pid,int TTL,struct sockaddr_in *sender,socklen_t 	*sender_len){
 		
 	fd_set descriptors;
@@ -24,15 +25,14 @@ int receive_one(int sockfd,int pid,int TTL,struct sockaddr_in *sender,socklen_t 
 		if (packet_len < 0 ) return -1;				
 
 		struct iphdr* ip_header = (struct iphdr*) buffer;
-       	u_int8_t* icmp_packet = buffer + 4 * ip_header->ihl;		
+		u_int8_t* icmp_packet = buffer + 4 * ip_header->ihl;		
 		struct icmphdr* icmp_headerRev = (struct icmphdr*) icmp_packet;
 				
 		if(icmp_headerRev->type == ICMP_TIME_EXCEEDED){
 		
-			struct iphdr* ip_header1 = (struct iphdr*)(icmp_packet + 8);
-			u_int8_t* icmp_packet = (u_int8_t*)(ip_header1) + 4 * ip_header1->ihl;
-			struct icmphdr* icmp_headerRev = (struct icmphdr*)icmp_packet;
-			
+			ip_header = (struct iphdr*)(icmp_packet + 8);
+			icmp_packet = (u_int8_t*)(ip_header) + 4 * ip_header->ihl;
+			icmp_headerRev = (struct icmphdr*)icmp_packet;
 				
 			if(icmp_headerRev->un.echo.id==pid &&icmp_headerRev->un.echo.sequence==TTL){
 		
@@ -42,7 +42,6 @@ int receive_one(int sockfd,int pid,int TTL,struct sockaddr_in *sender,socklen_t 
 				}
 			}	
 		}
-		
 		else if(icmp_headerRev->type == ICMP_ECHOREPLY && icmp_headerRev->un.echo.id==pid && icmp_headerRev->un.echo.sequence==TTL){
 		
 			if (packet_len >= 0) {
@@ -50,13 +49,13 @@ int receive_one(int sockfd,int pid,int TTL,struct sockaddr_in *sender,socklen_t 
 			}		
 		}	
 	}
-	return -1;
+	return 0;
 }
 
 int receive(int sockfd,int pid,int TTL, int *reply,struct sockaddr_in *sender,socklen_t *sender_len){
-	int TimeStart, TimeCurrent,TimeReply;
+	int TimeStart, TimeCurrent,TimeReply = 0 ;
 	TimeStart = clock();
-	while(*reply < 3 ){
+	while(*reply < 3 && TimeReply < 1000){
 	 	int tmp = receive_one(sockfd,pid,TTL,sender,sender_len);
 	 	TimeCurrent = clock();
 		TimeReply = TimeCurrent - TimeStart;

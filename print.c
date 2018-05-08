@@ -13,19 +13,17 @@ bool print(int reply,int TTL,int AvrTime,char* ip,struct sockaddr_in *sender){
 			char sender_ip_str[20]; 
 			inet_ntop(AF_INET, &(sender->sin_addr), sender_ip_str, sizeof(sender_ip_str));
 			printf ("%d %s    %dms\n",TTL, sender_ip_str,AvrTime);
-			printf("\n");
 			if(strcmp(sender_ip_str, ip)==0){	return true;}
 		}
 		else if (reply == 0)
 		{	
-			printf("* \n\n");
+			printf("%d * \n",TTL);
 		}
 		else
 		{
 			char sender_ip_str[20]; 
 			inet_ntop(AF_INET, &(sender->sin_addr), sender_ip_str, sizeof(sender_ip_str));
 			printf ("%d %s    ??\n",TTL, sender_ip_str);
-			printf("\n");
 			if(strcmp(sender_ip_str, ip)==0){	return true;}
 		}
 	return false;
